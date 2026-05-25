@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyTalks - Login & Registration</title>
+    <!-- PayPal SDK with YOUR actual client ID -->
+    <script src="https://www.paypal.com/sdk/js?client-id=BAAj87esBWQ_jdj0H4BPuWosmAIPN0Yw49JMVlCUNHaHNNoozye4857tkOoaAbRDaEXvJBYmrdm1tX3crE&currency=USD"></script>
+    <!-- EmailJS with YOUR actual public key -->
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+    <!-- Razorpay with YOUR actual key -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --purple: #8E2DE2;
+            --green: #00E676;
+            --text: #ffffff;
+            --muted: #cbd5e1;
+            --overlay: rgba(0,0,0,.35);
+            --btn-blue: #eaf2ff;
+            --btn-blue-border: #c7dbff;
+            --bg-dark: #0d0221;
+            --bg-mid: #0a0f2c;
+            --bg-light: #051f1b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            color: var(--text);
+            background:
+                radial-gradient(1200px 600px at 80% -10%, rgba(142,45,226,.28), transparent 60%),
+                radial-gradient(1000px 600px at -10% 90%, rgba(0,230,118,.25), transparent 60%),
+                linear-gradient(120deg, var(--bg-dark) 0%, var(--bg-mid) 35%, var(--bg-light) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 90px 20px 20px;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 5%;
+            background: rgba(13, 2, 33, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(142, 45, 226, 0.3);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-logo-mark {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            background: conic-gradient(from 180deg, var(--purple), var(--green) 60%, var(--purple));
+        }
+
+        .nav-logo-mark span {
+            font-weight: 900;
+            font-size: 16px;
+            color: #fff;
+        }
+
+        .nav-logo-text {
+            font-weight: 900;
+            font-size: 18px;
+            letter-spacing: .1em;
+            background: linear-gradient(90deg, var(--purple), var(--green));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--green);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .mobile-menu-btn span {
+            width: 25px;
+            height: 3px;
+            background: white;
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+
+        /* Country detector HIDDEN */
+        .country-detector {
+            display: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(13, 2, 33, 0.85);
+            border-radius: 28px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            border: 1px solid rgba(142, 45, 226, 0.3);
+            backdrop-filter: blur(12px);
+            margin: 20px auto;
+        }
+
+        .container::before {
+            content: "";
+            display: block;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--purple), var(--green));
+        }
+
+        .form-container {
+            padding: 40px 32px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .logo-mark {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            background: conic-gradient(from 180deg, var(--purple), var(--green) 60%, var(--purple));
+            box-shadow: 0 12px 28px rgba(0,230,118,.22), 0 10px 26px rgba(142,45,226,.22);
+        }
+
+        .logo-mark span {
+            font-weight: 900;
+            font-size: 18px;
+            letter-spacing: 1px;
+            color: #fff;
+        }
+
+        .logo-text {
+            font-weight: 900;
+            font-size: 24px;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, var(--purple), var(--green));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 28px;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 14px;
+            font-size: 16px;
+            color: var(--text);
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--purple);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(142, 45, 226, 0.3);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 999px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--purple), var(--green));
+            color: white;
+            box-shadow: 0 8px 20px rgba(142, 45, 226, 0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(142, 45, 226, 0.5);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+        }
+
+        .btn-ghost:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .toggle-form {
+            text-align: center;
+            margin-top: 28px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .toggle-form a {
+            color: var(--green);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .toggle-form a:hover {
+            text-decoration: underline;
+        }
+
+        .verification-section {
+            display: none;
+        }
+
+        .verification-code-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .verification-code-group input {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 4px;
+        }
+
+        .resend-code {
+            text-align: center;
+            margin-top: 12px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .resend-code a {
+            color: var(--green);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .password-strength {
+            margin-top: 6px;
+            font-size: 13px;
+        }
+
+        .strength-weak { color: #ff6b6b; }
+        .strength-medium { color: #ffd166; }
+        .strength-strong { color: var(--green); }
+
+        /* UPDATED Terms & Conditions Block - with enhanced legal text */
+        .terms-group {
+            margin: 24px 0 20px;
+            background: rgba(255,255,255,0.03);
+            padding: 18px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .terms-checkbox-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+        .terms-checkbox-row input {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            accent-color: var(--green);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .terms-checkbox-row label {
+            font-size: 14px;
+            line-height: 1.45;
+            color: var(--muted);
+            margin: 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .terms-checkbox-row a {
+            color: var(--green);
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .terms-checkbox-row a:hover {
+            text-decoration: underline;
+        }
+        
+        .data-consent-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+        .data-consent-row input {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            accent-color: var(--green);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .data-consent-row label {
+            font-size: 13px;
+            line-height: 1.45;
+            color: #b9c3d4;
+            margin: 0;
+            cursor: pointer;
+            font-weight: 400;
+        }
+        .data-consent-row strong {
+            color: var(--green);
+            font-weight: 600;
+        }
+        .terms-error {
+            color: #ff6b6b;
+            font-size: 12px;
+            margin-top: 8px;
+            text-align: center;
+            display: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: rgba(13, 2, 33, 0.96);
+            padding: 32px;
+            border-radius: 28px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(142, 45, 226, 0.4);
+            position: relative;
+        }
+
+        .modal-content::before {
+            content: "";
+            display: block;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--purple), var(--green));
+            border-radius: 28px 28px 0 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .modal h3 {
+            margin-bottom: 16px;
+            color: var(--text);
+            font-size: 26px;
+            font-weight: 800;
+        }
+
+        .modal p {
+            margin-bottom: 22px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 18px;
+            right: 22px;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--muted);
+            transition: 0.2s;
+        }
+        .close-modal:hover { color: white; }
+
+        .login-attempts {
+            text-align: center;
+            margin-bottom: 18px;
+            font-size: 14px;
+            color: var(--muted);
+            background: rgba(0,0,0,0.3);
+            padding: 6px 12px;
+            border-radius: 40px;
+            display: inline-block;
+            width: auto;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .login-attempts.warning { color: #ffaa66; font-weight: 600; }
+
+        .forgot-password {
+            text-align: right;
+            margin-top: 8px;
+        }
+        .forgot-password a {
+            color: var(--green);
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .success-message {
+            color: var(--green);
+            text-align: center;
+            margin-top: 16px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .crypto-animation {
+            height: 60px;
+            margin: 20px 0;
+            position: relative;
+        }
+        .coin {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple), var(--green));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 13px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            opacity: 0.7;
+        }
+        .coin:nth-child(1) { left: 8%; animation: float-coin 4s ease-in-out infinite 1.6s; }
+        .coin:nth-child(2) { left: 28%; animation: float-coin 4s ease-in-out infinite 1.9s; }
+        .coin:nth-child(3) { left: 48%; animation: float-coin 4s ease-in-out infinite 2.2s; }
+        .coin:nth-child(4) { left: 68%; animation: float-coin 4s ease-in-out infinite 2.5s; }
+        .coin:nth-child(5) { left: 88%; animation: float-coin 4s ease-in-out infinite 2.8s; }
+
+        @keyframes float-coin {
+            0%, 100% { transform: translateY(0); opacity: 0.7; }
+            50% { transform: translateY(-15px); opacity: 1; }
+        }
+
+        .social-proof {
+            margin: 20px 0 28px;
+            padding: 12px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 20px;
+        }
+        .proof-row {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .proof-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+        .footer {
+            text-align: center;
+            padding: 40px 16px 20px;
+            color: var(--muted);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            margin-top: 40px;
+            width: 100%;
+        }
+        .footer-links {
+            display: flex;
+            gap: 25px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .footer-links a { color: var(--muted); text-decoration: none; font-size: 14px; transition: 0.2s; }
+        .footer-links a:hover { color: var(--green); }
+        .footer-contact { margin: 15px 0; font-size: 14px; }
+        .footer-contact a { color: var(--green); text-decoration: none; }
+        .footer-copyright { font-size: 13px; opacity: 0.7; }
+
+        @media (max-width: 768px) {
+            .form-container { padding: 30px 20px; }
+            .container { max-width: 95%; }
+            .terms-group { padding: 14px; }
+        }
+        @media (max-width: 480px) {
+            .terms-checkbox-row label, .data-consent-row label { font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-logo">
+            <div class="nav-logo-mark"><span>MT</span></div>
+            <div class="nav-logo-text">MoneyTalks</div>
+        </div>
+        <div class="nav-links" id="navLinks">
+            <a href="index.html">Home</a>
+            <a href="plans.html">Plans</a>
+            <a href="links.html">Links</a>
+            <a href="game.html">Game</a>
+            <a href="faq.html">FAQ</a>
+        </div>
+        <div class="mobile-menu-btn" id="mobileMenuBtn">
+            <span></span><span></span><span></span>
+        </div>
+    </nav>
+
+    <!-- Country detector HIDDEN -->
+    <div class="country-detector"></div>
+
+    <div class="container">
+        <!-- Login Form -->
+        <div class="form-container" id="login-container">
+            <div class="logo"><div class="logo-mark"><span>MT</span></div><div class="logo-text">MoneyTalks</div></div>
+            <div class="social-proof">
+                <div class="proof-row">
+                    <div class="proof-item"><span>✅</span><span>2,500+ Users</span></div>
+                    <div class="proof-item"><span>🔒</span><span>Secure Payments</span></div>
+                    <div class="proof-item"><span>💰</span><span>Instant Access</span></div>
+                </div>
+            </div>
+            <h2>Login</h2>
+            <div class="crypto-animation"><div class="coin">₿</div><div class="coin">Ξ</div><div class="coin">$</div><div class="coin">€</div><div class="coin">£</div></div>
+            <div class="login-attempts" id="login-attempts">🔐 Attempts: 0/4</div>
+            <form id="login-form">
+                <div class="input-group"><label>Username or Email</label><input type="text" id="login-username" required><div class="error-message" id="login-username-error">Required</div></div>
+                <div class="input-group"><label>Password</label><input type="password" id="login-password" required><div class="error-message" id="login-password-error">Required</div></div>
+                <div class="forgot-password"><a id="forgot-password-link">Forgot password?</a></div>
+                <button type="submit" class="btn btn-primary">Login</button>
+                <div class="success-message" id="login-success">✔ Login success</div>
+            </form>
+            <div class="toggle-form">New here? <a id="show-register">Create account</a></div>
+        </div>
+
+        <!-- Registration Form with FULL legal text -->
+        <div class="form-container" id="register-container" style="display: none;">
+            <div class="logo"><div class="logo-mark"><span>MT</span></div><div class="logo-text">MoneyTalks</div></div>
+            <div class="social-proof">
+                <div class="proof-row">
+                    <div class="proof-item"><span>✅</span><span>2,500+ Users</span></div>
+                    <div class="proof-item"><span>🔒</span><span>Secure Payments</span></div>
+                    <div class="proof-item"><span>💰</span><span>Instant Access</span></div>
+                </div>
+            </div>
+            <h2>Register</h2>
+            <div class="crypto-animation"><div class="coin">₿</div><div class="coin">Ξ</div><div class="coin">$</div><div class="coin">€</div><div class="coin">£</div></div>
+            <form id="register-form">
+                <div class="input-group"><label>Username</label><input type="text" id="register-username" required><div class="error-message" id="register-username-error">Username required</div></div>
+                <div class="input-group"><label>Email</label><input type="email" id="register-email" required><div class="error-message" id="register-email-error">Valid email required</div></div>
+                <div class="input-group"><button type="button" class="btn btn-ghost" id="send-code-btn">📧 Send Verification Code</button></div>
+                <div class="verification-section" id="verification-section">
+                    <div class="input-group"><label>6-digit Code</label><div class="verification-code-group"><input type="text" id="verification-code" maxlength="6" placeholder="000000"></div><div class="error-message" id="verification-code-error">Enter code</div></div>
+                    <div class="resend-code">Didn't receive? <a id="resend-code-link">Resend code</a></div>
+                </div>
+                <div class="input-group"><label>Create Password</label><input type="password" id="register-password" required><div class="error-message" id="register-password-error">Password must contain uppercase, number & special char (min 8)</div><div class="password-strength" id="password-strength"></div></div>
+                <div class="input-group"><label>Confirm Password</label><input type="password" id="confirm-password" required><div class="error-message" id="confirm-password-error">Passwords do not match</div></div>
+
+                <!-- UPDATED TERMS & CONDITIONS + DATA CONSENT as requested -->
+                <div class="terms-group">
+                    <div class="terms-checkbox-row">
+                        <input type="checkbox" id="terms-checkbox-main">
+                        <label for="terms-checkbox-main">
+                            I agree to the <strong>Terms and Conditions</strong> and <strong>Official Policy</strong> of MoneyTalks.
+                        </label>
+                    </div>
+                    <div class="data-consent-row">
+                        <input type="checkbox" id="data-consent-checkbox">
+                        <label for="data-consent-checkbox">
+                            I consent to the collection and processing of my personal data as described in the <strong>Privacy Policy</strong>. I understand my data will be used for account management, payment processing, and platform improvements.
+                        </label>
+                    </div>
+                </div>
+                <div class="terms-error" id="terms-error">⚠️ You must accept both agreements to register.</div>
+
+                <button type="submit" class="btn btn-primary">Register & Earn</button>
+                <div class="success-message" id="register-success">✅ Registration successful!</div>
+            </form>
+            <div class="toggle-form">Already have account? <a id="show-login">Sign in</a></div>
+        </div>
+    </div>
+
+    <!-- Payment Modal (dynamic: India->Razorpay / else PayPal) -->
+    <div class="modal" id="payment-modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-payment-modal">&times;</span>
+            <h3>💰 Access Fee</h3>
+            <p>Maximum login attempts exceeded. Complete payment of $0.35 / ₹30 to continue.</p>
+            <div id="dynamic-payment-container"></div>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div class="modal" id="forgot-password-modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-forgot-modal">&times;</span>
+            <h3>Reset Password</h3>
+            <p>Enter your email, we'll send a reset link.</p>
+            <div class="input-group"><label>Email</label><input type="email" id="reset-email"><div class="error-message" id="reset-email-error">Valid email</div></div>
+            <button class="btn btn-primary" id="send-reset-link">Send Reset Link</button>
+            <div class="success-message" id="reset-success">📧 Link sent!</div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-links"><a href="about.html">About</a><a href="terms.html">Terms</a><a href="privacy.html">Privacy</a><a href="faq.html">FAQ</a></div>
+        <div class="footer-contact">Contact: <a href="mailto:themoneytalks.web@gmail.com">themoneytalks.web@gmail.com</a> | Telegram: @MONEYTALKS_OFFICAL</div>
+        <div class="footer-copyright">© <span id="year"></span> MoneyTalks. All rights reserved.</div>
+    </footer>
+
+    <script>
+        // basics
+        document.getElementById('year').innerText = new Date().getFullYear();
+        const mobileBtn = document.getElementById('mobileMenuBtn');
+        const navLinksEl = document.getElementById('navLinks');
+        if(mobileBtn) mobileBtn.onclick = () => navLinksEl.classList.toggle('active');
+
+        // URL param registration
+        if(new URLSearchParams(location.search).get('register') === 'true'){
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('register-container').style.display = 'block';
+        }
+
+        let verificationCode = '';
+        let loginAttempts = 0;
+        const MAX_ATTEMPTS = 4;
+        let isIndian = false;
+
+        // silent country detection + payment gateway setup
+        async function detectAndSetup() {
+            try {
+                const res = await fetch('https://ipapi.co/json/');
+                const data = await res.json();
+                isIndian = (data.country_code === 'IN');
+            } catch(e) { isIndian = false; }
+            setupPaymentContainer();
+        }
+        function setupPaymentContainer() {
+            const container = document.getElementById('dynamic-payment-container');
+            if(!container) return;
+            if(isIndian) {
+                container.innerHTML = `<div id="razorpay-button-container"><button class="btn btn-primary" id="razorpay-btn">💸 Pay with Razorpay (₹30)</button></div>`;
+                setTimeout(() => {
+                    const btn = document.getElementById('razorpay-btn');
+                    if(btn) btn.onclick = () => {
+                        const options = {
+                            key: 'rzp_test_SCYXm6xGDvO1hj',
+                            amount: 3000,
+                            currency: 'INR',
+                            name: 'MoneyTalks',
+                            description: 'Login Access',
+                            handler: function(resp) {
+                                showNotif('✅ Payment success! You can login now.', 'success');
+                                document.getElementById('payment-modal').style.display = 'none';
+                                loginAttempts = 0;
+                                document.getElementById('login-attempts').innerText = `🔐 Attempts: 0/${MAX_ATTEMPTS}`;
+                            },
+                            theme: { color: '#8E2DE2' }
+                        };
+                        new Razorpay(options).open();
+                    };
+                }, 50);
+            } else {
+                container.innerHTML = `<div id="paypal-button-container"></div>`;
+                setTimeout(() => {
+                    if(window.paypal) {
+                        paypal.Buttons({
+                            style: { layout: 'vertical', color: 'gold' },
+                            createOrder: (data, actions) => actions.order.create({ purchase_units: [{ amount: { value: '0.35', currency_code: 'USD' } }] }),
+                            onApprove: (data, actions) => actions.order.capture().then(() => {
+                                showNotif('✅ Payment successful! Access restored.', 'success');
+                                document.getElementById('payment-modal').style.display = 'none';
+                                loginAttempts = 0;
+                                document.getElementById('login-attempts').innerText = `🔐 Attempts: 0/${MAX_ATTEMPTS}`;
+                            }),
+                            onError: () => showNotif('Payment error', 'error')
+                        }).render('#paypal-button-container');
+                    }
+                }, 100);
+            }
+        }
+        detectAndSetup();
+
+        // EmailJS init
+        (function(){ emailjs.init("cTgH4ARD22nsbqrlk"); })();
+
+        // Toggle forms
+        document.getElementById('show-register')?.addEventListener('click',()=>{ document.getElementById('login-container').style.display='none'; document.getElementById('register-container').style.display='block'; });
+        document.getElementById('show-login')?.addEventListener('click',()=>{ document.getElementById('register-container').style.display='none'; document.getElementById('login-container').style.display='block'; });
+
+        // Send verification
+        document.getElementById('send-code-btn')?.addEventListener('click',()=>{
+            const email = document.getElementById('register-email').value;
+            if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('register-email-error','Invalid email'); return; }
+            hideError('register-email-error');
+            verificationCode = Math.floor(100000+Math.random()*900000).toString();
+            const btn = document.getElementById('send-code-btn');
+            const orig = btn.innerText;
+            btn.innerText = 'Sending...'; btn.disabled=true;
+            emailjs.send('service_h09oa77','template_z7ba9ll',{ user_email:email, verification_code:verificationCode, to_email:email })
+                .then(()=>{ document.getElementById('verification-section').style.display='block'; showNotif('📩 Code sent!','success'); })
+                .catch(()=>showNotif('Failed to send','error'))
+                .finally(()=>{ btn.innerText=orig; btn.disabled=false; });
+        });
+        document.getElementById('resend-code-link')?.addEventListener('click',()=>{
+            const email = document.getElementById('register-email').value;
+            if(!email) return;
+            verificationCode = Math.floor(100000+Math.random()*900000).toString();
+            emailjs.send('service_h09oa77','template_z7ba9ll',{ user_email:email, verification_code:verificationCode });
+            showNotif('New code sent','info');
+        });
+
+        // password strength
+        document.getElementById('register-password')?.addEventListener('input',()=>{
+            const pwd = document.getElementById('register-password').value;
+            const chk = checkPwd(pwd);
+            document.getElementById('password-strength').innerText = chk.msg;
+            document.getElementById('password-strength').className = 'password-strength '+chk.cls;
+        });
+        function checkPwd(pwd){
+            if(pwd.length<8) return { isValid:false, msg:'Too short', cls:'strength-weak' };
+            const hasUpper=/[A-Z]/.test(pwd), hasNum=/[0-9]/.test(pwd), hasSpecial=/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pwd);
+            const score = (hasUpper?1:0)+(hasNum?1:0)+(hasSpecial?1:0);
+            if(score===3) return { isValid:true, msg:'Strong ✓', cls:'strength-strong' };
+            if(score===2) return { isValid:true, msg:'Medium', cls:'strength-medium' };
+            return { isValid:false, msg:'Need uppercase, number, special', cls:'strength-weak' };
+        }
+
+        // LOGIN with attempt limit
+        document.getElementById('login-form')?.addEventListener('submit',(e)=>{
+            e.preventDefault();
+            const user = document.getElementById('login-username').value;
+            const pwd = document.getElementById('login-password').value;
+            loginAttempts++;
+            document.getElementById('login-attempts').innerText = `🔐 Attempts: ${loginAttempts}/${MAX_ATTEMPTS}`;
+            if(loginAttempts >= MAX_ATTEMPTS){
+                document.getElementById('payment-modal').style.display='flex';
+                return;
+            }
+            if(window.loginUser) window.loginUser(user, pwd);
+            else { showNotif('Demo: login successful','success'); setTimeout(()=>location.href='dashboard.html',1200); }
+        });
+
+        // REGISTER: enforce BOTH checkboxes
+        document.getElementById('register-form')?.addEventListener('submit',(e)=>{
+            e.preventDefault();
+            const termsOk = document.getElementById('terms-checkbox-main').checked;
+            const dataOk = document.getElementById('data-consent-checkbox').checked;
+            if(!termsOk || !dataOk){
+                document.getElementById('terms-error').style.display = 'block';
+                return;
+            }
+            document.getElementById('terms-error').style.display = 'none';
+            const username = document.getElementById('register-username').value;
+            const email = document.getElementById('register-email').value;
+            const code = document.getElementById('verification-code').value;
+            const pwd = document.getElementById('register-password').value;
+            const confirm = document.getElementById('confirm-password').value;
+            let valid = true;
+            if(!username) { showError('register-username-error','Username required'); valid=false; } else hideError('register-username-error');
+            if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('register-email-error','Valid email'); valid=false; } else hideError('register-email-error');
+            if(!code || code !== verificationCode) { showError('verification-code-error','Invalid code'); valid=false; } else hideError('verification-code-error');
+            const pwdStrength = checkPwd(pwd);
+            if(!pwdStrength.isValid) { showError('register-password-error',pwdStrength.msg); valid=false; } else hideError('register-password-error');
+            if(pwd !== confirm) { showError('confirm-password-error','Passwords mismatch'); valid=false; } else hideError('confirm-password-error');
+            if(valid && window.registerUser) window.registerUser(email, pwd, username);
+        });
+
+        // Forgot password
+        document.getElementById('forgot-password-link')?.addEventListener('click',()=>document.getElementById('forgot-password-modal').style.display='flex');
+        document.getElementById('close-forgot-modal')?.addEventListener('click',()=>document.getElementById('forgot-password-modal').style.display='none');
+        document.getElementById('send-reset-link')?.addEventListener('click',()=>{
+            const email = document.getElementById('reset-email').value;
+            if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('reset-email-error','Valid email'); return; }
+            hideError('reset-email-error');
+            emailjs.send('service_h09oa77','template_z7ba9ll',{ user_email:email, to_email:email })
+                .then(()=>{ document.getElementById('reset-success').style.display='block'; setTimeout(()=>{ document.getElementById('forgot-password-modal').style.display='none'; document.getElementById('reset-success').style.display='none'; },2500); });
+        });
+
+        // modal close
+        document.getElementById('close-payment-modal')?.addEventListener('click',()=>document.getElementById('payment-modal').style.display='none');
+        window.onclick = (e) => { if(e.target === document.getElementById('payment-modal')) document.getElementById('payment-modal').style.display='none'; if(e.target === document.getElementById('forgot-password-modal')) document.getElementById('forgot-password-modal').style.display='none'; };
+
+        function showError(id,msg){ let el=document.getElementById(id); if(el){ el.innerText=msg; el.style.display='block'; } }
+        function hideError(id){ let el=document.getElementById(id); if(el) el.style.display='none'; }
+        function showNotif(msg,type='success'){
+            const colors={ success:'#00E676', error:'#ff4757', info:'#8E2DE2' };
+            const d=document.createElement('div');
+            d.style.cssText=`position:fixed; bottom:20px; right:20px; background:${colors[type]}; color:white; padding:12px 20px; border-radius:40px; z-index:10000; font-weight:600; box-shadow:0 4px 12px black;`;
+            d.innerText=msg;
+            document.body.appendChild(d);
+            setTimeout(()=>d.remove(),3500);
+        }
+    </script>
+
+    <!-- Firebase Auth + Firestore -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, setDoc, updateDoc, getDocs, query, where, collection } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        const firebaseConfig = {
+            apiKey: "AIzaSyCgakUnf1xeAy5tU-oQQs84609wnMukNBE",
+            authDomain: "moneytalks-a9329.firebaseapp.com",
+            projectId: "moneytalks-a9329",
+            storageBucket: "moneytalks-a9329.firebasestorage.app",
+            messagingSenderId: "865902355512",
+            appId: "1:865902355512:web:f67bddc159776db34d72cd",
+            measurementId: "G-TLGCP9C4FD"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        function getRefCode(){ return new URLSearchParams(location.search).get("ref"); }
+        window.registerUser = async (email, password, username) => {
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, email, password);
+                const uid = cred.user.uid;
+                const myRef = uid.slice(0,6).toUpperCase();
+                const ref = getRefCode();
+                let referredBy = null;
+                if(ref){
+                    const q = query(collection(db,"users"), where("referralCode","==",ref));
+                    const snap = await getDocs(q);
+                    snap.forEach(async (docSnap)=>{
+                        if(docSnap.id !== uid){
+                            await updateDoc(doc(db,"users",docSnap.id),{ referrals: (docSnap.data().referrals||0)+1 });
+                            referredBy = ref;
+                        }
+                    });
+                }
+                await setDoc(doc(db,"users",uid),{
+                    email, username, credits:0, referralCode:myRef, referrals:0, referredBy, createdAt:new Date(), lastLogin:new Date()
+                });
+                showNotif("✅ Registration successful! Redirecting...","success");
+                setTimeout(()=> location.href="dashboard.html",1500);
+            } catch(err){ showNotif(err.message,"error"); }
+        };
+        window.loginUser = (email, password) => {
+            signInWithEmailAndPassword(auth, email, password)
+                .then(()=>{ showNotif("✅ Login success!","success"); setTimeout(()=> location.href="dashboard.html",1200); })
+                .catch(err=> showNotif(err.message,"error"));
+        };
+        window.showNotif = (msg,type)=>{ const d=document.createElement('div'); d.style.cssText=`position:fixed; top:20px; right:20px; background:${type==='success'?'#00E676':'#ff4757'}; color:white; padding:12px 18px; border-radius:40px; z-index:10000;`; d.innerText=msg; document.body.appendChild(d); setTimeout(()=>d.remove(),3000); };
+    </script>
+</body>
+</html>
